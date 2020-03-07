@@ -28,6 +28,7 @@ def get_proxies():
     proxies = req_proxy.get_proxy_list()  # this will create proxy list
     return proxies
 # proxies = get_proxies()
+proxies = ['', '86.105.130.124:6588']
 
 
 def get_info(driver, current_person):
@@ -99,10 +100,13 @@ def get_info(driver, current_person):
         Checking to be there any posts or not
         If there is no posts it returns person_info
     """
-    test_is_any_posts = driver.find_element_by_xpath('/html/body/div/div/div/div/div/div/div/div/div/div/p[2]').text
-    if test_is_any_posts == 'Check back for any new updates.':
-        person_info['posts'] = []
-        return person_info
+    try:
+        test_is_any_posts = driver.find_element_by_xpath('/html/body/div/div/div/div/div/div/div/div/div/div/p[2]').text
+        if test_is_any_posts == 'Check back for any new updates.':
+            person_info['posts'] = []
+            return person_info
+    except:
+        pass
 
     """
         scroll to bottom of page
@@ -162,25 +166,28 @@ def get_info(driver, current_person):
 
 
 def start_scrap(i, proxy_index):
-    # global proxies
+    global proxies
     # # print(proxies[])
     # PROXY = proxies[proxy_index].get_address()
-    chrome_options = Options()
-    PROXY = '86.105.130.124:6588'
-    chrome_options.add_argument('--proxy-server=%s' % PROXY)
-    webdriver.DesiredCapabilities.CHROME['proxy'] = {
-        "httpProxy": PROXY,
-        "ftpProxy": PROXY,
-        "sslProxy": PROXY,
-        "proxyType": "MANUAL",
-    }
-    # chrome_options = webdriver.ChromeOptions()
-    # prefs = {"profile.managed_default_content_settings.images": 2}
-    # chrome_options.add_experimental_option("prefs", prefs)
-    # chrome_options = Options()
-    # chrome_options.add_argument("--headless")
-    driver = webdriver.Chrome('chromedriver_win32/chromedriver.exe', options=chrome_options)
-    # driver = webdriver.Chrome('chromedriver2_win32/chromedriver.exe', options=chrome_options)
+    PROXY = proxies[proxy_index]
+    if PROXY:
+        chrome_options = Options()
+        chrome_options.add_argument('--proxy-server=%s' % PROXY)
+        webdriver.DesiredCapabilities.CHROME['proxy'] = {
+            "httpProxy": PROXY,
+            "ftpProxy": PROXY,
+            "sslProxy": PROXY,
+            "proxyType": "MANUAL",
+        }
+        # chrome_options = webdriver.ChromeOptions()
+        # prefs = {"profile.managed_default_content_settings.images": 2}
+        # chrome_options.add_experimental_option("prefs", prefs)
+        # chrome_options = Options()
+        # chrome_options.add_argument("--headless")
+        driver = webdriver.Chrome('chromedriver_win32/chromedriver.exe', options=chrome_options)
+        # driver = webdriver.Chrome('chromedriver2_win32/chromedriver.exe', options=chrome_options)
+    else:
+        driver = webdriver.Chrome('chromedriver_win32/chromedriver.exe')
 
     """
         We want to be sure to connect to page by using proxy
@@ -258,7 +265,7 @@ def start_thread(i):
     number_of_try = i
     this_try = start_scrap(i, number_of_try)
     while not this_try:
-        number_of_try += 4
+        # number_of_try += 4
         if number_of_try > len(proxies):
             break
         this_try = start_scrap(i, number_of_try)
@@ -266,22 +273,22 @@ def start_thread(i):
 start_time = time.time()
 t1 = threading.Thread(target=start_thread, args=(0,))
 t2 = threading.Thread(target=start_thread, args=(1,))
-t3 = threading.Thread(target=start_thread, args=(2,))
-t4 = threading.Thread(target=start_thread, args=(3,))
+# t3 = threading.Thread(target=start_thread, args=(2,))
+# t4 = threading.Thread(target=start_thread, args=(3,))
 # t5 = threading.Thread(target=start_thread, args=(4,))
 t1.start()
 sleep(1)
 t2.start()
 sleep(2)
-t3.start()
-sleep(3)
-t4.start()
+# t3.start()
+# sleep(3)
+# t4.start()
 # sleep(2)
 # t5.start()
 t1.join()
 t2.join()
-t3.join()
-t4.join()
+# t3.join()
+# t4.join()
 # t5.join()
 print("all thread are finished")
 print("#######################")
