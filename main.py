@@ -1,6 +1,8 @@
 # """ filename: script.py """
 import time
 from selenium.webdriver.chrome.options import Options
+from selenium.webdriver.common.keys import Keys
+
 import parameters
 from time import sleep
 from selenium import webdriver
@@ -16,11 +18,15 @@ from http_request_randomizer.requests.proxy.requestProxy import RequestProxy
 import ast
 with open('new_persons.txt','r') as f:
    all_new_persons = ast.literal_eval(f.read())
-with open('new_persons.txt','r') as f:
+with open('old_persons.txt','r') as f:
    all_old_persons = ast.literal_eval(f.read())
+   if not all_old_persons:
+       all_old_persons = set()
+with open('all_info.json', 'r') as all_info_file:
+    # Reading from json file
+    all_info = json.load(all_info_file)
 # all_new_persons = {'behzad-mahmoudi-76a57572', 'navid-yousefian-25a09040', 'abbas-karimzadeh-a344724a',
 #                    'majid-nouri-b7095457', 'businessleadersofiran'}
-all_info = {}
 
 
 def get_proxies():
@@ -28,9 +34,9 @@ def get_proxies():
     proxies = req_proxy.get_proxy_list()  # this will create proxy list
     return proxies
 # proxies = get_proxies()
-proxies = ['', '86.105.130.124:6588']
+proxies = ['86.105.130.124:6588', 's2.safegozar.in:443', '', '']
 
-
+# 123456:123456@
 def get_info(driver, current_person):
 
     """
@@ -60,6 +66,9 @@ def get_info(driver, current_person):
                     '/html/body/div/div/div/div/div/div/div/div/div/div/div/section/ul/li[*]/a')
             break
         except:
+            driver.execute_script('''window.open("http://bings.com","_blank");''')
+            windows = driver.window_handles
+            driver.switch_to.window(window_name=windows[-1])
             j += 1
     if j == 3:
         return False
@@ -73,6 +82,7 @@ def get_info(driver, current_person):
         Getting new person in this page
     """
     global all_new_persons
+    global all_old_persons
     # new_persons = driver.find_elements_by_xpath(
     #     '/html/body/div/div/div/div/div/div/div/div/div/div/div/section/ul/li[*]/a')
     for new_person in new_persons:
@@ -92,6 +102,9 @@ def get_info(driver, current_person):
             driver.get('https://www.linkedin.com/in/{}/detail/recent-activity/shares'.format(current_person))
             break
         except:
+            driver.execute_script('''window.open("http://bings.com","_blank");''')
+            windows = driver.window_handles
+            driver.switch_to.window(window_name=windows[-1])
             j += 1
     if j == 3:
         return False
@@ -178,6 +191,8 @@ def start_scrap(i, proxy_index):
             "ftpProxy": PROXY,
             "sslProxy": PROXY,
             "proxyType": "MANUAL",
+            "socksUsername": '123456',
+            "socksPassword": '123456',
         }
         # chrome_options = webdriver.ChromeOptions()
         # prefs = {"profile.managed_default_content_settings.images": 2}
@@ -205,6 +220,9 @@ def start_scrap(i, proxy_index):
             sign_in_button = driver.find_element_by_xpath('//*[@type="submit"]')
             break
         except:
+            driver.execute_script('''window.open("http://bings.com","_blank");''')
+            windows = driver.window_handles
+            driver.switch_to.window(window_name=windows[-1])
             j += 1
     if j == 3:
         driver.quit()
@@ -237,27 +255,25 @@ def start_scrap(i, proxy_index):
 
     global all_info
     global all_new_persons
-    try:
-        numbers_of_this_scrap = 0
-        while all_new_persons.__len__() and all_old_persons.__len__() < 200 and numbers_of_this_scrap < 60:
-            current_person = all_new_persons.pop()
-            all_old_persons.add(current_person)
-            # witch_new_persons = 1
-            person_info = get_info(driver, current_person)
-            if not person_info:
-                driver.quit()
-                return False
-            # witch_new_persons += 1
-            all_info[current_person] = person_info
-            print(person_info)
-            print("##########")
-            numbers_of_this_scrap += 1
-            sleep(random.choice([0.5, 1, 2]))
-            print("numbers of old persons = " + str(len(all_old_persons)))
-            print("numbers of new persons = " + str(len(all_new_persons)))
-        return True
-    except:
-        pass
+    global all_old_persons
+    numbers_of_this_scrap = 0
+    while all_new_persons.__len__() and all_old_persons.__len__() < 100 and numbers_of_this_scrap < 60:
+        current_person = all_new_persons.pop()
+        # witch_new_persons = 1
+        person_info = get_info(driver, current_person)
+        if not person_info:
+            driver.quit()
+            return False
+        # witch_new_persons += 1
+        all_info[current_person] = person_info
+        all_old_persons.add(current_person)
+        print(person_info)
+        print("##########")
+        numbers_of_this_scrap += 1
+        sleep(random.choice([0.5, 1, 2]))
+        print("numbers of old persons = " + str(len(all_old_persons)))
+        print("numbers of new persons = " + str(len(all_new_persons)))
+    return True
 
 
 def start_thread(i):
@@ -271,23 +287,23 @@ def start_thread(i):
         this_try = start_scrap(i, number_of_try)
 
 start_time = time.time()
-t1 = threading.Thread(target=start_thread, args=(0,))
-t2 = threading.Thread(target=start_thread, args=(1,))
-# t3 = threading.Thread(target=start_thread, args=(2,))
+# t1 = threading.Thread(target=start_thread, args=(0,))
+# t2 = threading.Thread(target=start_thread, args=(1,))
+t3 = threading.Thread(target=start_thread, args=(2,))
 # t4 = threading.Thread(target=start_thread, args=(3,))
 # t5 = threading.Thread(target=start_thread, args=(4,))
-t1.start()
-sleep(1)
-t2.start()
-sleep(2)
-# t3.start()
-# sleep(3)
+# t1.start()
+# sleep(1)
+# t2.start()
+# sleep(2)
+t3.start()
+sleep(3)
 # t4.start()
 # sleep(2)
 # t5.start()
-t1.join()
-t2.join()
-# t3.join()
+# t1.join()
+# t2.join()
+t3.join()
 # t4.join()
 # t5.join()
 print("all thread are finished")
