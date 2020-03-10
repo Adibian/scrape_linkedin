@@ -57,6 +57,8 @@ def get_info(driver, current_person):
                     '/html/body/div/div/div/div/div/div/div/div/main/div/section/div/div/div/h2').text
                 new_persons = driver.find_elements_by_xpath(
                     '/html/body/div/div/div/div/div/div/div/div/div/div/div/section/ul/li[*]/a')
+                # country = driver.find_element_by_xpath(
+                #     '/html/body/div/div/div/div/div/div/div/div/main/div/section/div/div/div/ul[2]/li[1]').text
             except:
                 name = driver.find_element_by_xpath(
                     '/html/body/main/section[1]/section/section[1]/div/div[1]/div[1]/h1').text
@@ -64,6 +66,8 @@ def get_info(driver, current_person):
                     '/html/body/main/section[1]/section/section[1]/div/div[1]/div[1]/h2').text
                 new_persons = driver.find_elements_by_xpath(
                     '/html/body/div/div/div/div/div/div/div/div/div/div/div/section/ul/li[*]/a')
+                # country = driver.find_element_by_xpath(
+                #     '/html/body/div/div/div/div/div/div/div/div/main/div/section/div/div/div/ul[2]/li[1]').text
             break
         except:
             driver.execute_script('''window.open("http://bings.com","_blank");''')
@@ -72,9 +76,13 @@ def get_info(driver, current_person):
             j += 1
     if j == 3:
         return False
-
+    country = driver.find_element_by_xpath(
+        '/html/body/div/div/div/div/div/div/div/div/main/div/section/div/div/div/ul[2]/li[1]').text
     # skills = driver.find_elements_by_xpath(
     #     '/html/body/div[6]/div[4]/div[3]/div/div/div/div/div[2]/main/div[2]/div[6]/div/section/ol/li[*]')
+
+    if 'Iran' not in country:
+        return 'not_in_Iran'
 
     person_info = {'urn': current_person, 'name': name, 'description': description}
 
@@ -257,7 +265,7 @@ def start_scrap(i, proxy_index):
     global all_new_persons
     global all_old_persons
     numbers_of_this_scrap = 0
-    while all_new_persons.__len__() and all_old_persons.__len__() < 100 and numbers_of_this_scrap < 60:
+    while all_new_persons.__len__() and all_old_persons.__len__() < 200 and numbers_of_this_scrap < 80:
         current_person = all_new_persons.pop()
         # witch_new_persons = 1
         person_info = get_info(driver, current_person)
@@ -265,8 +273,9 @@ def start_scrap(i, proxy_index):
             driver.quit()
             return False
         # witch_new_persons += 1
-        all_info[current_person] = person_info
-        all_old_persons.add(current_person)
+        if person_info != 'not_in_Iran':
+            all_info[current_person] = person_info
+            all_old_persons.add(current_person)
         print(person_info)
         print("##########")
         numbers_of_this_scrap += 1
@@ -290,7 +299,7 @@ start_time = time.time()
 # t1 = threading.Thread(target=start_thread, args=(0,))
 # t2 = threading.Thread(target=start_thread, args=(1,))
 t3 = threading.Thread(target=start_thread, args=(2,))
-# t4 = threading.Thread(target=start_thread, args=(3,))
+# t4 = threading.Thread(target=start_thread, args=(2,))
 # t5 = threading.Thread(target=start_thread, args=(4,))
 # t1.start()
 # sleep(1)
